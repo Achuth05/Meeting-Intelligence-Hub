@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from ..models.db import supabase
 from ..services.parser import parse_transcript
-from ..services.embeddings import chunk_text, embed_chunks
+from ..services.embedding import chunk_text, embed_chunks
 import os, uuid, tempfile
 
 upload_bp = Blueprint('upload', __name__)

@@ -1,3 +1,8 @@
+from flask import Blueprint, jsonify
+from ..models.db import supabase
+from ..services.llm import extract_actions
+
+extract_bp = Blueprint('extract', __name__)
 @extract_bp.route('/meetings/<meeting_id>/extract', methods=['POST'])
 def extract(meeting_id):
     # Fetch full transcript text from DB
