@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, send_file
 from ..models.db import supabase
+from ..services.auth import token_required
 import pandas as pd
 import io
 from reportlab.pdfgen import canvas
@@ -8,6 +9,7 @@ from reportlab.lib.pagesizes import A4
 export_bp = Blueprint('export', __name__)
 
 @export_bp.route('/meetings/<meeting_id>/export', methods=['GET'])
+@token_required
 def export_items(meeting_id):
     format = request.args.get('format', 'csv')  
     result = supabase.table('action_items') \

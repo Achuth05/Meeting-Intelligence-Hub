@@ -12,13 +12,14 @@ def create_app():
 
     CORS(app, origins=[os.getenv('FRONTEND_URL', 'http://localhost:5173')])
 
+    from .routes.auth import auth_bp
     from .routes.upload import upload_bp
     from .routes.extract import extract_bp
     #from .routes.chat import chat_bp
     #from .routes.sentiment import sentiment_bp
     from .routes.export import export_bp
 
-
+    app.register_blueprint(auth_bp, url_prefix='/api')
     app.register_blueprint(upload_bp, url_prefix='/api')
     app.register_blueprint(extract_bp, url_prefix='/api')
     #app.register_blueprint(chat_bp, url_prefix='/api')
