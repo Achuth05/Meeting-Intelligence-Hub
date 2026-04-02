@@ -1,7 +1,7 @@
-# Meeting Intelligence Hub
+# MeetCognit
 
 ## Project Title
-Meeting Intelligence Hub — AI-powered meeting transcript analysis and knowledge retrieval system.
+MeetCognit — AI-powered meeting transcript analysis and knowledge retrieval system.
 
 ## The Problem
 Organizations hold dozens of meetings every week, generating hours of transcript content that nobody has time to read. Critical decisions, action items, and strategic reasoning get buried in pages of dialogue, forcing teams into repeated "what happened in that meeting?" conversations that waste time and slow execution.
@@ -52,3 +52,112 @@ Key features:
 
 ### 1. Clone the repository
 ```bash
+git clone https://github.com/yourusername/meeting-intelligence.git
+cd meeting-intelligence
+```
+
+### 2. Backend setup
+```bash
+cd backend
+python -m venv venv
+
+# Windows
+venv\Scripts\activate
+
+# Mac/Linux
+source venv/bin/activate
+
+python -m pip install -r requirements.txt
+```
+### 3. Environment variables
+Create a `.env` file inside the `backend` folder:
+```
+GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxx
+SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
+SUPABASE_SERVICE_KEY=eyJxxxxxxxxxx
+FLASK_SECRET_KEY=anyrandomstring
+FRONTEND_URL=http://localhost:5173
+```
+### 4. Supabase database setup
+Go to your Supabase project → SQL Editor and run the following:
+```sql
+CREATE EXTENSION IF NOT EXISTS vector;
+
+CREATE TABLE meetings (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  name text NOT NULL,
+  project text,
+  created_at timestamptz DEFAULT now(),
+  word_count integer,
+  speakers jsonb,
+  meeting_date date,
+  sentiment_score float
+);
+
+CREATE TABLE transcript_chunks (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  meeting_id uuid REFERENCES meetings(id) ON DELETE CASCADE,
+  chunk_index integer,
+  content text,
+  speaker text,
+  timestamp text,
+  embedding vector(384)
+);
+
+CREATE TABLE action_items (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  meeting_id uuid REFERENCES meetings(id) ON DELETE CASCADE,
+  type text CHECK(type IN ('decision', 'action_item')),
+  description text,
+  owner text,
+  due_date text,
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE sentiment_segments (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  meeting_id uuid REFERENCES meetings(id) ON DELETE CASCADE,
+  speaker text,
+  segment text,
+  score float,
+  label text,
+  time_start text
+);
+
+CREATE INDEX ON transcript_chunks
+  USING ivfflat (embedding vector_cosine_ops)
+  WITH (lists = 50);
+CREATE OR REPLACE FUNCTION match_chunks(
+  query_embedding vector(384),
+  match_threshold float,
+  match_count int,
+  filter_meeting_id uuid DEFAULT null
+)
+RETURNS TABLE(id uuid, content text, meeting_id uuid, speaker text, similarity float)
+LANGUAGE sql STABLE
+AS $$
+  SELECT id, content, meeting_id, speaker,
+    1 - (embedding <=> query_embedding) AS similarity
+  FROM transcript_chunks
+  WHERE (filter_meeting_id IS null OR meeting_id = filter_meeting_id)
+    AND 1 - (embedding <=> query_embedding) > match_threshold
+  ORDER BY embedding <=> query_embedding
+  LIMIT match_count;
+$$;
+```
+### 5. Run the backend
+```bash
+cd backend
+python run.py
+```
+Backend runs at `http://localhost:5000`
+Verify at `http://localhost:5000/health` — should return `{"status": "ok"}`
+
+### 6. Frontend setup
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Frontend runs at `http://localhost:5173`
+
