@@ -4,6 +4,16 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
   timeout: 30000,
 })
+// Add this Interceptor
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('authToken'); // or 'access_token' depending on your login logic
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
 
 // Auto-retry on 429 (rate limit) with backoff
 api.interceptors.response.use(null, async (error) => {
@@ -14,6 +24,17 @@ api.interceptors.response.use(null, async (error) => {
   return Promise.reject(error)
 })
 
+// Auth endpoints
+export const loginUser = (email, password) =>
+  api.post('/auth/login', { email, password })
+
+export const registerUser = (email, password) =>
+  api.post('/auth/register', { email, password })
+
+export const logoutUser = () =>
+  api.post('/auth/logout')
+
+// Meeting endpoints
 export const uploadFiles = (files, project) => {
   const form = new FormData()
   files.forEach(f => form.append('files', f))

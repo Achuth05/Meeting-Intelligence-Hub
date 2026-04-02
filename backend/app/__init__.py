@@ -10,7 +10,7 @@ def create_app():
     app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY')
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
 
-    CORS(app, origins=[os.getenv('FRONTEND_URL', 'http://localhost:5173')])
+    CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
 
     from .routes.auth import auth_bp
     from .routes.upload import upload_bp
@@ -18,6 +18,8 @@ def create_app():
     #from .routes.chat import chat_bp
     #from .routes.sentiment import sentiment_bp
     from .routes.export import export_bp
+    from .routes.meetings import meetings_bp
+
 
     app.register_blueprint(auth_bp, url_prefix='/api')
     app.register_blueprint(upload_bp, url_prefix='/api')
@@ -25,6 +27,7 @@ def create_app():
     #app.register_blueprint(chat_bp, url_prefix='/api')
     #app.register_blueprint(sentiment_bp, url_prefix='/api')
     app.register_blueprint(export_bp, url_prefix='/api')
+    app.register_blueprint(meetings_bp, url_prefix='/api')
 
     @app.route('/health')
     def health():
