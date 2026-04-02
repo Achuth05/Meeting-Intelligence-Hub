@@ -52,8 +52,8 @@ Key features:
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/meeting-intelligence.git
-cd meeting-intelligence
+git clone https://github.com/Achuth05/Meeting-Intelligence.git
+cd Meeting-intelligence
 ```
 
 ### 2. Backend setup
