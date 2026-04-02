@@ -15,17 +15,16 @@ def create_app():
     from .routes.auth import auth_bp
     from .routes.upload import upload_bp
     from .routes.extract import extract_bp
-    #from .routes.chat import chat_bp
-    #from .routes.sentiment import sentiment_bp
+    from .routes.chat import chat_bp
+    from .routes.sentiment import sentiment_bp
     from .routes.export import export_bp
     from .routes.meetings import meetings_bp
-
-
+    
     app.register_blueprint(auth_bp, url_prefix='/api')
     app.register_blueprint(upload_bp, url_prefix='/api')
     app.register_blueprint(extract_bp, url_prefix='/api')
-    #app.register_blueprint(chat_bp, url_prefix='/api')
-    #app.register_blueprint(sentiment_bp, url_prefix='/api')
+    app.register_blueprint(chat_bp, url_prefix='/api')
+    app.register_blueprint(sentiment_bp, url_prefix='/api')
     app.register_blueprint(export_bp, url_prefix='/api')
     app.register_blueprint(meetings_bp, url_prefix='/api')
 
