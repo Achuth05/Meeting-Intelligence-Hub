@@ -10,6 +10,7 @@ export function Auth() {
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const [username, setUsername] = useState('')
 
   const { login, register } = useAuth()
   const navigate = useNavigate()
@@ -29,7 +30,7 @@ export function Auth() {
         if (!email || !password || !confirmPassword) throw new Error('Please fill in all fields')
         if (password !== confirmPassword) throw new Error('Passwords do not match')
         if (password.length < 6) throw new Error('Password must be at least 6 characters')
-        await register(email, password)
+        await register(email, password, username)
         setSuccessMessage('Account created! Redirecting...')
         setTimeout(() => navigate('/dashboard'), 1500)
       }
@@ -92,7 +93,7 @@ export function Auth() {
           {['Login', 'Sign Up'].map((label, i) => {
             const active = (i === 0) === isLogin
             return (
-              <button key={label} onClick={() => { setIsLogin(i === 0); setErrorMessage(''); setSuccessMessage('') }}
+              <button key={label} onClick={() => { setIsLogin(i === 0); setErrorMessage(''); setSuccessMessage(''); setUsername('') }}
                 style={{
                   flex: 1, padding: '9px', border: 'none', borderRadius: '7px',
                   fontSize: '14px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.15s',
@@ -115,6 +116,22 @@ export function Auth() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          {!isLogin && (
+            <div>
+              <label style={{
+                display: 'block', fontSize: '13px', fontWeight: '600',
+                color: 'var(--text-h)', marginBottom: '6px'
+              }}>
+                Username
+              </label>
+              <input
+                type="text" className="input" value={username} required={!isLogin}
+                onChange={e => setUsername(e.target.value)}
+                placeholder="e.g. johndoe"
+                minLength={2}
+              />
+            </div>
+          )}
           <div>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: 'var(--text-h)', marginBottom: '6px' }}>
               Email Address

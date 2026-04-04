@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
 import { ActionTable } from '../components/ActionTable'
 import { ExportButtons } from '../components/ExportButtons'
+import { ChatPanel } from '../components/ChatPanel'
 import { extractItems, getSentiment } from '../api/client'
 import { Sidebar } from '../components/Sidebar'
 
 export default function MeetingDetail() {
   const { id } = useParams()
-  const { user } = useAuth()
 
   const [decisions, setDecisions] = useState([])
   const [actionItems, setActionItems] = useState([])
@@ -17,7 +16,6 @@ export default function MeetingDetail() {
   const [extracted, setExtracted] = useState(false)
   const [extractError, setExtractError] = useState(null)
   const [sentimentLoading, setSentimentLoading] = useState(false)
-  const [selectedSegment, setSelectedSegment] = useState(null)
   const [activeTab, setActiveTab] = useState('actions')
 
   const handleExtract = async () => {
@@ -47,13 +45,11 @@ export default function MeetingDetail() {
     }
   }
 
-  const LABEL_COLORS = {
-    consensus:   { bg: 'rgba(34,197,94,0.12)',   color: '#4ade80' },
-    conflict:    { bg: 'rgba(244,63,94,0.12)',    color: '#fb7185' },
-    frustration: { bg: 'rgba(249,115,22,0.12)',   color: '#fb923c' },
-    enthusiasm:  { bg: 'rgba(79,142,247,0.12)',   color: '#60a5fa' },
-    uncertainty: { bg: 'rgba(234,179,8,0.12)',    color: '#facc15' },
-    neutral:     { bg: 'rgba(148,163,184,0.12)',  color: '#94a3b8' },
+  // Sentiment label → color
+  const SENTIMENT_COLORS = {
+    Positive: { bg: 'rgba(34,197,94,0.12)', color: '#4ade80', bar: 'var(--success)' },
+    Neutral:  { bg: 'rgba(148,163,184,0.12)', color: '#94a3b8', bar: 'var(--muted)' },
+    Negative: { bg: 'rgba(244,63,94,0.12)', color: '#fb7185', bar: 'var(--danger)' },
   }
 
   return (
@@ -62,7 +58,11 @@ export default function MeetingDetail() {
 
       <div className="main-content">
         <div className="page-header">
-          <Link to="/dashboard" style={{ fontSize: '13px', color: 'var(--accent)', display: 'inline-flex', alignItems: 'center', gap: '4px', marginBottom: '8px' }}>
+          <Link to="/dashboard" style={{
+            fontSize: '13px', color: 'var(--accent)',
+            display: 'inline-flex', alignItems: 'center',
+            gap: '4px', marginBottom: '8px'
+          }}>
             ← Dashboard
           </Link>
           <h1>Meeting Detail</h1>
@@ -75,7 +75,11 @@ export default function MeetingDetail() {
 
           {/* Extract CTA */}
           {!extracted && (
-            <div className="card" style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+            <div className="card" style={{
+              marginBottom: '24px', display: 'flex',
+              alignItems: 'center', justifyContent: 'space-between',
+              flexWrap: 'wrap', gap: '16px'
+            }}>
               <div>
                 <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-h)', marginBottom: '4px' }}>
                   Analyze this meeting
@@ -84,19 +88,16 @@ export default function MeetingDetail() {
                   Extract decisions, action items and run sentiment analysis
                 </p>
               </div>
-              <button
-                onClick={handleExtract}
-                disabled={extracting}
-                className="btn btn-primary"
-              >
+              <button onClick={handleExtract} disabled={extracting} className="btn btn-primary">
                 {extracting ? <><span className="spinner" /> Extracting...</> : '⚡ Extract Insights'}
               </button>
             </div>
           )}
 
-          {extractError && <div className="alert alert-error" style={{ marginBottom: '20px' }}>{extractError}</div>}
+          {extractError && (
+            <div className="alert alert-error" style={{ marginBottom: '20px' }}>{extractError}</div>
+          )}
 
-          {/* After extraction */}
           {extracted && (
             <>
               {/* Stats row */}
@@ -111,9 +112,12 @@ export default function MeetingDetail() {
                 </div>
                 {sentiment && (
                   <div className="stat-card">
-                    <div className="stat-label">Sentiment Score</div>
-                    <div className={`stat-value ${sentiment.overall_score > 0 ? 'success' : 'orange'}`}>
-                      {sentiment.overall_score > 0 ? '+' : ''}{(sentiment.overall_score * 100).toFixed(0)}%
+                    <div className="stat-label">Sentiment</div>
+                    <div className="stat-value" style={{
+                      color: SENTIMENT_COLORS[sentiment.label]?.color || 'var(--text-h)',
+                      fontSize: '20px'
+                    }}>
+                      {sentiment.label}
                     </div>
                   </div>
                 )}
@@ -122,18 +126,19 @@ export default function MeetingDetail() {
                 </div>
               </div>
 
-              {/* Tabs */}
+              {/* Tabs — only actions and sentiment */}
               <div className="tabs">
-                {['actions', 'sentiment', 'chat'].map(tab => (
-                  <button key={tab} className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
+                {['actions', 'sentiment'].map(tab => (
+                  <button
+                    key={tab}
+                    className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
                     onClick={() => {
                       setActiveTab(tab)
                       if (tab === 'sentiment' && !sentiment) handleSentiment()
                     }}
                   >
-                    {tab === 'actions' && '📋 Actions'}
+                    {tab === 'actions' && '📋 Actions & Decisions'}
                     {tab === 'sentiment' && '📊 Sentiment'}
-                    {tab === 'chat' && '💬 Chat'}
                   </button>
                 ))}
               </div>
@@ -155,116 +160,116 @@ export default function MeetingDetail() {
                     </div>
                   )}
 
+                  {!sentiment && !sentimentLoading && (
+                    <div className="card" style={{ textAlign: 'center', padding: '48px' }}>
+                      <div style={{ fontSize: '36px', marginBottom: '16px' }}>📊</div>
+                      <p style={{ fontWeight: '600', color: 'var(--text-h)', marginBottom: '8px' }}>
+                        Run Sentiment Analysis
+                      </p>
+                      <p style={{ fontSize: '13px', color: 'var(--text)', marginBottom: '20px' }}>
+                        Analyze the emotional tone and key highlights of this meeting
+                      </p>
+                      <button onClick={handleSentiment} className="btn btn-primary">
+                        Analyze Sentiment
+                      </button>
+                    </div>
+                  )}
+
                   {sentiment && !sentimentLoading && (
-                    <>
-                      {/* Overall + speaker breakdown */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px', marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+                      {/* Score card */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
 
                         {/* Overall score */}
                         <div className="card" style={{ textAlign: 'center' }}>
-                          <p style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--muted)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                            Overall
+                          <p style={{
+                            fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--muted)',
+                            marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.08em'
+                          }}>
+                            Overall Sentiment
                           </p>
                           <div style={{
-                            fontSize: '48px', fontWeight: '800',
-                            color: sentiment.overall_score > 0 ? 'var(--success)' : 'var(--danger)',
-                            letterSpacing: '-0.03em', lineHeight: 1
+                            fontSize: '52px', fontWeight: '800', letterSpacing: '-0.03em', lineHeight: 1,
+                            color: SENTIMENT_COLORS[sentiment.label]?.color || 'var(--text-h)',
+                            marginBottom: '8px'
                           }}>
-                            {sentiment.overall_score > 0 ? '+' : ''}{(sentiment.overall_score * 100).toFixed(0)}
+                            {sentiment.score > 0 ? '+' : ''}{(sentiment.score * 100).toFixed(0)}
                           </div>
-                          <p style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '8px' }}>
-                            {sentiment.overall_score > 0.3 ? '😊 Positive' : sentiment.overall_score < -0.3 ? '😟 Negative' : '😐 Neutral'}
-                          </p>
+                          <div style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '6px',
+                            padding: '4px 12px', borderRadius: '20px',
+                            background: SENTIMENT_COLORS[sentiment.label]?.bg || 'var(--surface2)',
+                            marginBottom: '16px'
+                          }}>
+                            <span style={{ fontSize: '18px' }}>
+                              {sentiment.label === 'Positive' ? '😊' : sentiment.label === 'Negative' ? '😟' : '😐'}
+                            </span>
+                            <span style={{
+                              fontSize: '13px', fontWeight: '600',
+                              color: SENTIMENT_COLORS[sentiment.label]?.color
+                            }}>
+                              {sentiment.label}
+                            </span>
+                          </div>
+
+                          {/* Score bar */}
+                          <div style={{ height: '6px', background: 'var(--surface2)', borderRadius: '3px', overflow: 'hidden' }}>
+                            <div style={{
+                              height: '100%', borderRadius: '3px',
+                              width: `${Math.abs(sentiment.score) * 100}%`,
+                              background: SENTIMENT_COLORS[sentiment.label]?.bar || 'var(--muted)',
+                              transition: 'width 0.6s ease',
+                              marginLeft: sentiment.score < 0 ? 'auto' : '0'
+                            }} />
+                          </div>
                         </div>
 
-                        {/* Speaker breakdown */}
+                        {/* Highlights */}
                         <div className="card">
-                          <p style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--muted)', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                            Per Speaker
+                          <p style={{
+                            fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--muted)',
+                            marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.08em'
+                          }}>
+                            Key Highlights
                           </p>
-                          {sentiment.speaker_breakdown && Object.entries(sentiment.speaker_breakdown).map(([speaker, score]) => (
-                            <div key={speaker} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-                              <span style={{ width: '100px', fontSize: '13px', color: 'var(--text-h)', fontWeight: '500', flexShrink: 0 }}>
-                                {speaker}
-                              </span>
-                              <div style={{ flex: 1, height: '6px', background: 'var(--surface2)', borderRadius: '3px', overflow: 'hidden' }}>
-                                <div style={{
-                                  height: '100%', borderRadius: '3px',
-                                  width: `${Math.abs(score) * 100}%`,
-                                  background: score > 0 ? 'var(--success)' : 'var(--danger)',
-                                  transition: 'width 0.5s ease'
-                                }} />
-                              </div>
-                              <span style={{ fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text)', width: '40px', textAlign: 'right' }}>
-                                {(score * 100).toFixed(0)}%
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Segments */}
-                      <div className="card">
-                        <p style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--muted)', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                          Dialogue Segments — click to expand
-                        </p>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          {(sentiment.segments || []).map((seg, i) => {
-                            const c = LABEL_COLORS[seg.label] || LABEL_COLORS.neutral
-                            const isSelected = selectedSegment === i
-                            return (
-                              <div key={i}
-                                onClick={() => setSelectedSegment(isSelected ? null : i)}
-                                style={{
-                                  padding: '12px 16px', borderRadius: '8px',
-                                  background: isSelected ? c.bg : 'var(--surface2)',
-                                  border: `1px solid ${isSelected ? c.color + '40' : 'var(--border)'}`,
-                                  cursor: 'pointer', transition: 'all 0.15s'
-                                }}
-                              >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                  <div style={{
-                                    width: '8px', height: '8px', borderRadius: '50%',
-                                    background: c.color, flexShrink: 0
-                                  }} />
-                                  <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-h)', flex: 1 }}>
-                                    {seg.speaker || 'Unknown'}
-                                  </span>
+                          {Array.isArray(sentiment.highlights) ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                              {sentiment.highlights.map((h, i) => (
+                                <div key={i} style={{
+                                  display: 'flex', gap: '10px', alignItems: 'flex-start',
+                                  padding: '10px 14px', background: 'var(--surface2)',
+                                  borderRadius: '8px', border: '1px solid var(--border)'
+                                }}>
                                   <span style={{
-                                    fontSize: '11px', padding: '2px 8px', borderRadius: '12px',
-                                    background: c.bg, color: c.color, fontWeight: '500'
+                                    fontFamily: 'var(--mono)', fontSize: '11px',
+                                    color: 'var(--accent)', fontWeight: '600',
+                                    flexShrink: 0, marginTop: '1px'
                                   }}>
-                                    {seg.label}
+                                    {String(i + 1).padStart(2, '0')}
                                   </span>
-                                  <span style={{ fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--muted)' }}>
-                                    {seg.score > 0 ? '+' : ''}{(seg.score * 100).toFixed(0)}%
-                                  </span>
-                                </div>
-                                {isSelected && (
-                                  <p style={{ fontSize: '13px', color: 'var(--text)', marginTop: '10px', lineHeight: '1.6', paddingLeft: '18px' }}>
-                                    "{seg.segment}"
+                                  <p style={{ fontSize: '13px', color: 'var(--text-h)', lineHeight: '1.6' }}>
+                                    {h}
                                   </p>
-                                )}
-                              </div>
-                            )
-                          })}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p style={{ fontSize: '13px', color: 'var(--text)', lineHeight: '1.6' }}>
+                              {sentiment.highlights}
+                            </p>
+                          )}
                         </div>
                       </div>
-                    </>
-                  )}
-                </div>
-              )}
 
-              {/* Chat tab — placeholder until ChatPanel is built */}
-              {activeTab === 'chat' && (
-                <div className="card fade-up" style={{ textAlign: 'center', padding: '60px' }}>
-                  <div style={{ fontSize: '40px', marginBottom: '16px' }}>💬</div>
-                  <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '8px', color: 'var(--text-h)' }}>
-                    Chat coming soon
-                  </h3>
-                  <p style={{ color: 'var(--text)', fontSize: '14px' }}>
-                    The chatbot will be available once ChatPanel is connected.
-                  </p>
+                      {/* Re-analyze button */}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <button onClick={handleSentiment} className="btn btn-ghost" style={{ fontSize: '13px' }}>
+                          ↺ Re-analyze
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </>
@@ -272,6 +277,9 @@ export default function MeetingDetail() {
 
         </div>
       </div>
+
+      {/* Floating chat — scoped to this specific meeting */}
+      <ChatPanel meetingId={id} />
     </div>
   )
 }

@@ -39,9 +39,8 @@ export const uploadFiles = (files, project) => {
   const form = new FormData()
   files.forEach(f => form.append('files', f))
   form.append('project', project)
-  return api.post('/upload', form, {headers: {'Content-Type': 'multipart/form-data'}})
+  return api.post('/upload', form, { headers: { 'Content-Type': 'multipart/form-data' } })
 }
-
 export const extractItems = (meetingId) => api.post(`/meetings/${meetingId}/extract`)
 export const askQuestion = (question, meetingId, history) =>
   api.post('/chat', { question, meeting_id: meetingId, history })

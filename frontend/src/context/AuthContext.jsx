@@ -8,13 +8,11 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Check if user is logged in on mount
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const token = localStorage.getItem('authToken')
         const userData = localStorage.getItem('user')
-        
         if (token && userData) {
           setUser(JSON.parse(userData))
         }
@@ -26,23 +24,21 @@ export function AuthProvider({ children }) {
         setLoading(false)
       }
     }
-
     checkAuth()
   }, [])
 
-  const register = async (email, password) => {
+  const register = async (email, password, username) => {
     setError(null)
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/register`,
-        { email, password }
+        { email, password, username }
       )
-      
-      const { token, user_id } = response.data
+      const { token, user_id, username: uname } = response.data
+      const userData = { id: user_id, email, username: uname }
       localStorage.setItem('authToken', token)
-      localStorage.setItem('user', JSON.stringify({ id: user_id, email }))
-      setUser({ id: user_id, email })
-      
+      localStorage.setItem('user', JSON.stringify(userData))
+      setUser(userData)
       return response.data
     } catch (err) {
       const message = err.response?.data?.error || 'Registration failed'
@@ -58,12 +54,11 @@ export function AuthProvider({ children }) {
         `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/login`,
         { email, password }
       )
-      
-      const { token, user_id } = response.data
+      const { token, user_id, username } = response.data
+      const userData = { id: user_id, email, username }
       localStorage.setItem('authToken', token)
-      localStorage.setItem('user', JSON.stringify({ id: user_id, email }))
-      setUser({ id: user_id, email })
-      
+      localStorage.setItem('user', JSON.stringify(userData))
+      setUser(userData)
       return response.data
     } catch (err) {
       const message = err.response?.data?.error || 'Login failed'

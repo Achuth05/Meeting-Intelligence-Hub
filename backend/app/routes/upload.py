@@ -23,20 +23,15 @@ def upload_transcripts():
         if ext not in ALLOWED:
             return jsonify({'error': f'{file.filename} is not a supported format (.txt, .vtt)'}), 422
 
-        # Save to temp, parse, embed, store
         with tempfile.NamedTemporaryFile(suffix=f'.{ext}', delete=False) as tmp:
             tmp_path = tmp.name
             file.save(tmp_path)
 
-        # File is now closed — safe to use and delete on Windows
-        parsed = parse_transcript(tmp_path, ext)
-        print(f"DEBUG: Parsed chunks count: {len(parsed['chunks'])}")
-        print(f"DEBUG: Parsed speakers: {parsed['speakers']}")
-        print(f"DEBUG: Word count: {parsed['word_count']}")
-        
+        # 1. Parse the file
+        parsed = parse_transcript(tmp_path, ext, file.filename)
         os.unlink(tmp_path)
 
-        # Insert meeting record
+        # 2. Insert the main meeting record
         meeting = supabase.table('meetings').insert({
             'name': file.filename,
             'project': project,
@@ -48,45 +43,38 @@ def upload_transcripts():
 
         meeting_id = meeting.data[0]['id']
 
-        # Chunk → embed → store in Supabase
+        # 3. CHUNK & EMBED (The "Intelligence" Layer)
+        # We take the raw parsed chunks and turn them into logical 300-token blocks
         chunks = chunk_text(parsed['chunks'])
-        print(f"DEBUG: After chunk_text: {len(chunks)} chunks")
         
-        embedded = embed_chunks(chunks)
-        print(f"DEBUG: After embed_chunks: {len(embedded)} chunks with embeddings")
+        # We generate the vector embeddings (the 'DNA' of the text)
+        embedded_chunks = embed_chunks(chunks)
 
-        # Format rows for Supabase - convert embeddings to list format
+        # 4. Format rows including the VECTORS
         rows = []
-        for i, c in enumerate(embedded):
-            row = {
-                'meeting_id': meeting_id,
-                'chunk_index': i,
-                'content': c['content'],
-                'speaker': c['speaker'] or 'Unknown',
-                'timestamp': c['timestamp'] or '00:00:00'
-            }
-            rows.append(row)
+        rows = [{
+            'meeting_id': meeting_id,
+            'chunk_index': i,
+            'content': c['content'],
+            'speaker': c['speaker'],
+            'timestamp': c['timestamp'],
+            'embedding': list(c['embedding'])  # ← explicit list conversion
+        } for i, c in enumerate(embedded_chunks)]
 
-        print(f"DEBUG: About to insert {len(rows)} rows")
         if rows:
-            print(f"DEBUG: Sample row: {rows[0]}")
-        else:
-            print("DEBUG: WARNING - no rows to insert!")
-            # Still add the meeting even if no chunks
-            uploaded.append({'meeting_id': meeting_id, 'filename': file.filename,
-                              'speakers': parsed['speakers'], 'word_count': parsed['word_count']})
-            continue
+            try:
+                # 5. Bulk insert everything including the embeddings
+                supabase.table('transcript_chunks').insert(rows).execute()
+                print(f"Successfully stored {len(rows)} vector-enabled chunks for {file.filename}")
+            except Exception as e:
+                print(f"Vector Insert failed: {e}")
+                return jsonify({'error': 'Failed to store vector data', 'details': str(e)}), 500
         
-        try:
-            # Try inserting without embeddings first (simplest case)
-            result = supabase.table('transcript_chunks').insert(rows).execute()
-            print(f"Successfully inserted {len(rows)} chunks")
-        except Exception as e:
-            print(f"Insert failed: {e}")
-            print(f"Error type: {type(e).__name__}")
-            raise
-                
-        uploaded.append({'meeting_id': meeting_id, 'filename': file.filename,
-                          'speakers': parsed['speakers'], 'word_count': parsed['word_count']})
+        uploaded.append({
+            'meeting_id': meeting_id, 
+            'filename': file.filename,
+            'speakers': parsed['speakers'], 
+            'word_count': parsed['word_count']
+        })
 
     return jsonify({'success': True, 'uploaded': uploaded}), 201

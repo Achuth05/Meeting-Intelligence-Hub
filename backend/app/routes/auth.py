@@ -14,10 +14,14 @@ def register():
     
     email = data.get('email')
     password = data.get('password')
-    
+    username = data.get('username', '').strip()  
+
     if not email or not password:
         return jsonify({'error': 'Email and password are required'}), 400
-    
+    if not username:
+        return jsonify({'error': 'Username is required'}), 400
+    if len(username) < 2:
+        return jsonify({'error': 'Username must be at least 2 characters'}), 400
     # Email validation
     if '@' not in email or '.' not in email:
         return jsonify({'error': 'Invalid email format'}), 400
@@ -30,7 +34,12 @@ def register():
         # Register with Supabase Auth
         response = supabase.auth.sign_up({
             "email": email,
-            "password": password
+            "password": password,
+            "options": {
+                "data": {
+                    "username": username
+                }
+            }
         })
         
         user = response.user
@@ -39,6 +48,7 @@ def register():
         return jsonify({
             'user_id': user.id,
             'email': user.email,
+            'username': username,
             'token': session.access_token if session else None,
             'message': 'Registration successful. Check your email to confirm.'
         }), 201
@@ -72,10 +82,12 @@ def login():
         
         user = response.user
         session = response.session
+        username = user.user_metadata.get('username', email.split('@')[0])
         
         return jsonify({
             'user_id': user.id,
             'email': user.email,
+            'username': username,
             'token': session.access_token
         }), 200
         

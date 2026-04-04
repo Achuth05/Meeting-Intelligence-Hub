@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getMeetings } from '../api/client'
 import { Sidebar } from '../components/Sidebar'
+import { ChatPanel } from '../components/ChatPanel'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -34,7 +35,7 @@ export default function Dashboard() {
       <div className="main-content">
         <div className="page-header">
           <h1>Dashboard</h1>
-          <p>Welcome back, {user?.email?.split('@')[0]} — here's your meeting overview</p>
+          <p>Welcome back {user?.username || user?.email?.split('@')[0]}, here's your meeting overview</p>
         </div>
 
         <div className="page-body">
@@ -59,11 +60,6 @@ export default function Dashboard() {
                   return d > week
                 }).length}
               </div>
-            </div>
-            <div className="stat-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Link to="/upload" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-                + Upload Meeting
-              </Link>
             </div>
           </div>
 
@@ -162,6 +158,9 @@ export default function Dashboard() {
 
         </div>
       </div>
+
+      {/* Floating chatbot — searches across ALL meetings (no meetingId) */}
+      <ChatPanel meetingId={null} />
     </div>
   )
 }

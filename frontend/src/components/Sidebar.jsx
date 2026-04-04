@@ -36,7 +36,7 @@ export function Sidebar() {
         <div className="user-chip">
           <div className="user-avatar">{initial}</div>
           <div className="user-info">
-            <div className="user-email">{user?.email}</div>
+            <div className="user-email">{user?.username || user?.email?.split('@')[0]}</div>
           </div>
           <button className="logout-btn" onClick={logout} title="Logout">
             ⏻
