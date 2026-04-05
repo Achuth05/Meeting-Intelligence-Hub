@@ -1,7 +1,8 @@
-from openai import OpenAI
 import os
+from sentence_transformers import SentenceTransformer
 
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+# Load the lightweight model (approx 80MB)
+model = SentenceTransformer('all-MiniLM-L6-v2')
 
 def chunk_text(chunks: list, max_tokens=300) -> list:
     result, current, current_chars = [], [], 0
@@ -26,18 +27,19 @@ def chunk_text(chunks: list, max_tokens=300) -> list:
     return result
 
 def embed_chunks(chunks: list) -> list:
+    # 1. Extract the text from each chunk
     texts = [c['content'] for c in chunks]
-    response = client.embeddings.create(
-        model="text-embedding-3-small",
-        input=texts
-    )
-    for i, emb in enumerate(response.data):
-        chunks[i]['embedding'] = emb.embedding
+    
+    # 2. Generate embeddings locally using the CPU
+    embeddings = model.encode(texts)
+    
+    # 3. Convert numpy arrays to Python lists and attach back to chunks
+    for i, emb in enumerate(embeddings):
+        chunks[i]['embedding'] = emb.tolist()
+        
     return chunks
 
 def embed_query(text: str) -> list:
-    response = client.embeddings.create(
-        model="text-embedding-3-small",
-        input=[text]
-    )
-    return response.data[0].embedding
+    # Generate embedding for a single search string
+    embedding = model.encode([text])[0]
+    return embedding.tolist()

@@ -1,12 +1,13 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
 flask
 flask-cors
 python-dotenv
 supabase
 groq
-tiktoken
 reportlab
 numpy
-openai
+torch==2.2.1+cpu
+sentence-transformers
 pandas
 webvtt-py
 gunicorn
