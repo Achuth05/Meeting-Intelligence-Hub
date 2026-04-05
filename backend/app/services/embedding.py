@@ -6,7 +6,7 @@ import time
 # Get your free token from: https://huggingface.co/settings/tokens
 HF_TOKEN = os.environ.get("HF_API_TOKEN")
 MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2"
-API_URL = f"https://api-inference.huggingface.co/pipeline/feature-extraction/{MODEL_ID}"
+API_URL = f"https://router.huggingface.co/hf-inference/pipeline/feature-extraction/{MODEL_ID}"
 headers = {"Authorization": f"Bearer {HF_TOKEN}"}
 
 def chunk_text(chunks: list, max_tokens=300) -> list:
