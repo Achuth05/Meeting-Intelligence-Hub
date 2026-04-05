@@ -6,7 +6,7 @@ supabase
 groq
 reportlab
 numpy
-torch==2.2.1+cpu
+torch
 sentence-transformers
 pandas
 webvtt-py
