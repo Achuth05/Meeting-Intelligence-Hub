@@ -5,6 +5,7 @@ supabase
 groq
 tiktoken
 reportlab
+numpy
 pandas
 webvtt-py
 gunicorn
