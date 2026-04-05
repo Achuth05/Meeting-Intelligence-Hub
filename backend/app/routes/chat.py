@@ -66,24 +66,20 @@ For "targeted", extract 3-5 specific content words that would appear in transcri
 
             # ii. Fetch chunks based on strategy
             if strategy == 'broad':
-                # General summary — fetch all chunks directly
+                # Fetch all meetings first
+                all_meetings_res = supabase.table('meetings') \
+                    .select('id, name, meeting_date') \
+                    .order('meeting_date', desc=False).execute()
+                
+                all_meeting_ids = [m['id'] for m in all_meetings_res.data]
+                
+                # Fetch chunks for all meetings
                 all_chunks = supabase.table('transcript_chunks') \
                     .select('id, content, meeting_id, speaker') \
-                    .order('chunk_index').limit(80).execute().data or []
-                print(f"DEBUG: Broad fetch returned: {len(all_chunks)} chunks")
-
-            else:
-                # Targeted — vector search + keyword fallback
-                query_vector = embed_query(question)
-                rpc_params = {
-                    'query_embedding': query_vector,
-                    'match_threshold': 0.02,
-                    'match_count': 40,
-                    'filter_meeting_id': None
-                }
-                vector_res = supabase.rpc('match_chunks', rpc_params).execute()
-                all_chunks = vector_res.data if vector_res.data else []
-                print(f"DEBUG: Vector search returned: {len(all_chunks)} chunks")
+                    .in_('meeting_id', all_meeting_ids) \
+                    .order('chunk_index').limit(100).execute().data or []
+                
+                print(f"DEBUG: Broad fetch returned: {len(all_chunks)} chunks from {len(all_meeting_ids)} meetings")
 
                 for word in dynamic_keywords:
                     if len(word) < 3:
