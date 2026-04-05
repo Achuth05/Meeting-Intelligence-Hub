@@ -16,6 +16,7 @@ export default function MeetingDetail() {
   const [extractError, setExtractError] = useState(null)
   const [sentimentLoading, setSentimentLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('actions')
+  const [selectedSegment, setSelectedSegment] = useState(null)
 
   const handleExtract = async () => {
     setExtracting(true)
@@ -45,15 +46,21 @@ export default function MeetingDetail() {
   }
 
   const SENTIMENT_COLORS = {
-    Positive: { bg: 'rgba(34,197,94,0.12)', color: '#4ade80', bar: 'var(--success)' },
-    Neutral:  { bg: 'rgba(148,163,184,0.12)', color: '#94a3b8', bar: 'var(--muted)' },
-    Negative: { bg: 'rgba(244,63,94,0.12)', color: '#fb7185', bar: 'var(--danger)' },
+    Positive:    { bg: 'rgba(34,197,94,0.12)',   color: '#4ade80', bar: 'var(--success)' },
+    Neutral:     { bg: 'rgba(148,163,184,0.12)', color: '#94a3b8', bar: 'var(--muted)' },
+    Negative:    { bg: 'rgba(244,63,94,0.12)',   color: '#fb7185', bar: 'var(--danger)' },
+    consensus:   { bg: 'rgba(34,197,94,0.12)',   color: '#4ade80' },
+    conflict:    { bg: 'rgba(244,63,94,0.12)',   color: '#fb7185' },
+    frustration: { bg: 'rgba(249,115,22,0.12)',  color: '#fb923c' },
+    enthusiasm:  { bg: 'rgba(79,142,247,0.12)',  color: '#60a5fa' },
+    uncertainty: { bg: 'rgba(234,179,8,0.12)',   color: '#facc15' },
+    neutral:     { bg: 'rgba(148,163,184,0.12)', color: '#94a3b8' },
   }
 
-const capitalize = (str) => {
-  if (!str) return ''
-  return str.charAt(0).toUpperCase() + str.slice(1)
-}
+  const capitalize = (str) => {
+    if (!str) return ''
+    return str.charAt(0).toUpperCase() + str.slice(1)
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
@@ -116,7 +123,7 @@ const capitalize = (str) => {
               ))}
             </div>
 
-            {/* Actions — side by side */}
+            {/* Actions tab — side by side */}
             {activeTab === 'actions' && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }} className="fade-up">
 
@@ -197,39 +204,142 @@ const capitalize = (str) => {
                 )}
 
                 {sentiment && !sentimentLoading && (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
-                    <div className="card" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', padding: '32px 24px' }}>
-                      <p style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Overall Sentiment</p>
-                      <div style={{ fontSize: '56px', fontWeight: '800', letterSpacing: '-0.03em', lineHeight: 1, color: SENTIMENT_COLORS[sentiment.label]?.color || 'var(--text-h)' }}>
-                        {sentiment.score > 0 ? '+' : ''}{(sentiment.score * 100).toFixed(0)}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+                    {/* Row 1 — Score + Highlights side by side */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
+
+                      {/* Overall score */}
+                      <div className="card" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', padding: '32px 24px' }}>
+                        <p style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Overall Sentiment</p>
+                        <div style={{ fontSize: '56px', fontWeight: '800', letterSpacing: '-0.03em', lineHeight: 1, color: SENTIMENT_COLORS[sentiment.label]?.color || 'var(--text-h)' }}>
+                          {sentiment.overall_score > 0 ? '+' : ''}{((sentiment.overall_score || sentiment.score || 0) * 100).toFixed(0)}
+                        </div>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 16px', borderRadius: '20px', background: SENTIMENT_COLORS[sentiment.label]?.bg || 'var(--surface2)' }}>
+                          <span style={{ fontSize: '20px' }}>
+                            {sentiment.label === 'Positive' ? '😊' : sentiment.label === 'Negative' ? '😟' : '😐'}
+                          </span>
+                          <span style={{ fontSize: '14px', fontWeight: '700', color: SENTIMENT_COLORS[sentiment.label]?.color }}>{sentiment.label}</span>
+                        </div>
+                        <div style={{ width: '100%', height: '6px', background: 'var(--surface2)', borderRadius: '3px', overflow: 'hidden' }}>
+                          <div style={{
+                            height: '100%', borderRadius: '3px',
+                            width: `${Math.abs((sentiment.overall_score || sentiment.score || 0)) * 100}%`,
+                            background: SENTIMENT_COLORS[sentiment.label]?.bar || 'var(--muted)',
+                            transition: 'width 0.6s ease'
+                          }} />
+                        </div>
+                        <button onClick={handleSentiment} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', color: 'var(--muted)', cursor: 'pointer', fontFamily: 'var(--font)' }}>
+                          ↺ Re-analyze
+                        </button>
                       </div>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 16px', borderRadius: '20px', background: SENTIMENT_COLORS[sentiment.label]?.bg || 'var(--surface2)' }}>
-                        <span style={{ fontSize: '20px' }}>{sentiment.label === 'Positive' ? '😊' : sentiment.label === 'Negative' ? '😟' : '😐'}</span>
-                        <span style={{ fontSize: '14px', fontWeight: '700', color: SENTIMENT_COLORS[sentiment.label]?.color }}>{sentiment.label}</span>
+
+                      {/* Key Highlights */}
+                      <div className="card">
+                        <p style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '16px' }}>Key Highlights</p>
+                        {Array.isArray(sentiment.highlights) ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {sentiment.highlights.map((h, i) => (
+                              <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', padding: '12px 16px', background: 'var(--surface2)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                                <span style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--accent)', fontWeight: '700', flexShrink: 0, marginTop: '1px' }}>{String(i + 1).padStart(2, '0')}</span>
+                                <p style={{ fontSize: '13px', color: 'var(--text-h)', lineHeight: '1.6' }}>{h}</p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p style={{ fontSize: '13px', color: 'var(--text)', lineHeight: '1.6' }}>{sentiment.highlights}</p>
+                        )}
                       </div>
-                      <div style={{ width: '100%', height: '6px', background: 'var(--surface2)', borderRadius: '3px', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', borderRadius: '3px', width: `${Math.abs(sentiment.score) * 100}%`, background: SENTIMENT_COLORS[sentiment.label]?.bar || 'var(--muted)', transition: 'width 0.6s ease' }} />
-                      </div>
-                      <button onClick={handleSentiment} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', color: 'var(--muted)', cursor: 'pointer', fontFamily: 'var(--font)' }}>
-                        ↺ Re-analyze
-                      </button>
                     </div>
 
-                    <div className="card">
-                      <p style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '16px' }}>Key Highlights</p>
-                      {Array.isArray(sentiment.highlights) ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                          {sentiment.highlights.map((h, i) => (
-                            <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', padding: '12px 16px', background: 'var(--surface2)', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                              <span style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--accent)', fontWeight: '700', flexShrink: 0, marginTop: '1px' }}>{String(i + 1).padStart(2, '0')}</span>
-                              <p style={{ fontSize: '13px', color: 'var(--text-h)', lineHeight: '1.6' }}>{h}</p>
+                    {/* Row 2 — Per Speaker Breakdown (full width) */}
+                    {sentiment.speaker_breakdown && Object.keys(sentiment.speaker_breakdown).length > 0 && (
+                      <div className="card">
+                        <p style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '16px' }}>
+                          Per Speaker Breakdown
+                        </p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          {Object.entries(sentiment.speaker_breakdown).map(([speaker, data]) => (
+                            <div key={speaker} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <div style={{
+                                width: '28px', height: '28px', borderRadius: '50%',
+                                background: 'linear-gradient(135deg, var(--accent), var(--accent2))',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontSize: '11px', fontWeight: '700', color: 'white', flexShrink: 0
+                              }}>
+                                {speaker[0].toUpperCase()}
+                              </div>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                  <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-h)' }}>{speaker}</span>
+                                  <span style={{
+                                    fontSize: '11px', padding: '1px 8px', borderRadius: '12px', fontWeight: '500',
+                                    background: SENTIMENT_COLORS[data.label]?.bg || 'var(--surface2)',
+                                    color: SENTIMENT_COLORS[data.label]?.color || 'var(--text)'
+                                  }}>
+                                    {data.dominant_emotion || data.label}
+                                  </span>
+                                </div>
+                                <div style={{ height: '5px', background: 'var(--surface2)', borderRadius: '3px', overflow: 'hidden' }}>
+                                  <div style={{
+                                    height: '100%', borderRadius: '3px',
+                                    width: `${Math.abs(data.score || 0) * 100}%`,
+                                    background: (data.score || 0) > 0 ? 'var(--success)' : 'var(--danger)',
+                                    transition: 'width 0.5s ease'
+                                  }} />
+                                </div>
+                              </div>
+                              <span style={{ fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--text)', width: '36px', textAlign: 'right' }}>
+                                {(data.score || 0) > 0 ? '+' : ''}{((data.score || 0) * 100).toFixed(0)}%
+                              </span>
                             </div>
                           ))}
                         </div>
-                      ) : (
-                        <p style={{ fontSize: '13px', color: 'var(--text)', lineHeight: '1.6' }}>{sentiment.highlights}</p>
-                      )}
-                    </div>
+                      </div>
+                    )}
+
+                    {/* Row 3 — Dialogue Segments (full width) */}
+                    {sentiment.segments && sentiment.segments.length > 0 && (
+                      <div className="card">
+                        <p style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '16px' }}>
+                          Dialogue Segments — click to expand
+                        </p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          {sentiment.segments.map((seg, i) => {
+                            const c = SENTIMENT_COLORS[seg.label] || SENTIMENT_COLORS.neutral
+                            const isSelected = selectedSegment === i
+                            return (
+                              <div key={i}
+                                onClick={() => setSelectedSegment(isSelected ? null : i)}
+                                style={{
+                                  padding: '10px 14px', borderRadius: '8px', cursor: 'pointer',
+                                  transition: 'all 0.15s',
+                                  background: isSelected ? c.bg : 'var(--surface2)',
+                                  border: `1px solid ${isSelected ? c.color + '40' : 'var(--border)'}`
+                                }}
+                              >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: c.color, flexShrink: 0 }} />
+                                  <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-h)', flex: 1 }}>{seg.speaker || 'Unknown'}</span>
+                                  <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '12px', background: c.bg, color: c.color, fontWeight: '500' }}>
+                                    {seg.label}
+                                  </span>
+                                  <span style={{ fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--muted)' }}>
+                                    {(seg.score || 0) > 0 ? '+' : ''}{((seg.score || 0) * 100).toFixed(0)}%
+                                  </span>
+                                </div>
+                                {isSelected && (
+                                  <p style={{ fontSize: '13px', color: 'var(--text)', marginTop: '8px', lineHeight: '1.6', paddingLeft: '16px', fontStyle: 'italic' }}>
+                                    "{seg.text}"
+                                  </p>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                   </div>
                 )}
               </div>

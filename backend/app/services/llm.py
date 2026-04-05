@@ -4,7 +4,8 @@ import re
 
 client = Groq()
 
-# Optimized Prompt for Llama 3.3 70B
+# ─── Extraction ────────────────────────────────────────────────────────────────
+
 EXTRACT_PROMPT = """You are a meeting analysis expert. Carefully read the transcript below and extract ALL decisions and action items.
 
 IMPORTANT: The transcript format is "Speaker Name: content". 
@@ -32,49 +33,84 @@ TRANSCRIPT:
 Now return the JSON:"""
 
 def extract_actions(transcript_text: str, meeting_date: str = None) -> dict:
-    """Extract decisions and action items using Groq and Llama 3.3 70B."""
-    
-    # 1. Handle long transcripts (Groq limit safety)
-    text = transcript_text[:12000] 
-    
-    # 2. Set the Year Hint for your 4-file test (2024 vs 2026)
+    text = transcript_text[:12000]
     year_hint = meeting_date[:4] if (meeting_date and len(meeting_date) >= 4) else "2026"
-    
+
     try:
-        # 3. Call Groq with high-reasoning model
         resp = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": EXTRACT_PROMPT.format(transcript=text, year_hint=year_hint)}],
-            temperature=0.1 # Low temperature ensures strict factual extraction
+            temperature=0.1
         )
-        
         resp_text = resp.choices[0].message.content.strip()
-        
-        # 4. Clean Markdown formatting (in case the AI wraps JSON in ```)
         resp_text = re.sub(r'```json\s*', '', resp_text)
         resp_text = re.sub(r'```\s*', '', resp_text)
         resp_text = resp_text.strip()
-        
-        # 5. Extract JSON structure using Regex safety
+
         json_match = re.search(r'\{[\s\S]*\}', resp_text)
         if json_match:
             resp_text = json_match.group()
         else:
-            print("DEBUG: No JSON structure found in response")
             return {"decisions": [], "action_items": []}
-        
-        # 6. Parse and Validate
+
         result = json.loads(resp_text)
-        
-        # Ensure the frontend doesn't crash on missing keys
         if 'decisions' not in result: result['decisions'] = []
         if 'action_items' not in result: result['action_items'] = []
-        
         return result
-        
+
     except json.JSONDecodeError:
-        print(f"DEBUG: JSON parse error. Response was: {resp_text[:200]}...")
         return {"decisions": [], "action_items": []}
     except Exception as e:
         print(f"DEBUG: Groq API error: {e}")
         return {"decisions": [], "action_items": []}
+
+
+# ─── Sentiment ─────────────────────────────────────────────────────────────────
+
+SENTIMENT_PROMPT = """Analyze the sentiment of this meeting transcript in detail.
+Return ONLY valid JSON with this exact structure, no other text:
+
+{{
+  "overall_score": 0.3,
+  "label": "Positive",
+  "highlights": ["reason 1", "reason 2"],
+  "speaker_breakdown": {{
+    "Alice": {{"score": 0.8, "label": "Positive", "dominant_emotion": "enthusiasm"}},
+    "Bob": {{"score": -0.2, "label": "Negative", "dominant_emotion": "frustration"}}
+  }},
+  "segments": [
+    {{
+      "speaker": "Alice",
+      "text": "brief excerpt max 20 words",
+      "score": 0.7,
+      "label": "consensus",
+      "emotion": "enthusiasm"
+    }}
+  ]
+}}
+
+Labels for overall and speaker: Positive, Neutral, Negative
+Labels for segments: consensus, conflict, frustration, enthusiasm, uncertainty, neutral
+
+TRANSCRIPT:
+{transcript}"""
+
+def analyze_sentiment(transcript_text: str) -> dict:
+    text = transcript_text[:6000]
+    try:
+        resp = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": SENTIMENT_PROMPT.format(transcript=text)}],
+            response_format={"type": "json_object"},
+            temperature=0.1
+        )
+        data = json.loads(resp.choices[0].message.content)
+        if 'overall_score' not in data: data['overall_score'] = 0
+        if 'label' not in data: data['label'] = 'Neutral'
+        if 'highlights' not in data: data['highlights'] = []
+        if 'speaker_breakdown' not in data: data['speaker_breakdown'] = {}
+        if 'segments' not in data: data['segments'] = []
+        return data
+    except Exception as e:
+        print(f"DEBUG: Sentiment error: {e}")
+        return {"overall_score": 0, "label": "Neutral", "highlights": [], "speaker_breakdown": {}, "segments": []}
