@@ -21,3 +21,12 @@ def get_user_meetings():
     except Exception as e:
         print(f"Error fetching meetings: {e}")
         return jsonify({'error': str(e)}), 500
+
+@meetings_bp.route('/meetings/<meeting_id>', methods=['DELETE'])
+@token_required
+def delete_meeting(meeting_id):
+    supabase.table('action_items').delete().eq('meeting_id', meeting_id).execute()
+    supabase.table('transcript_chunks').delete().eq('meeting_id', meeting_id).execute()
+    supabase.table('sentiment_segments').delete().eq('meeting_id', meeting_id).execute()
+    supabase.table('meetings').delete().eq('id', meeting_id).execute()
+    return jsonify({'success': True})

@@ -81,16 +81,16 @@ export function Landing() {
             <Link to="/auth" className="btn btn-primary" style={{ padding: '12px 32px', fontSize: '15px' }}>
               Start for free →
             </Link>
-            <Link to="/auth" className="btn btn-ghost" style={{ padding: '12px 32px', fontSize: '15px' }}>
-              See a demo
-            </Link>
+            <a href="#features" className="btn btn-ghost" style={{ padding: '12px 32px', fontSize: '15px' }}>
+              See Features ↓
+            </a>
           </div>
         </div>
       </section>
 
       {/* Features */}
       <section style={{ padding: '80px 48px', borderTop: '1px solid var(--border)' }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+        <div id='features' style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <p style={{
             fontFamily: 'var(--mono)', fontSize: '11px', color: 'var(--accent)',
             textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '12px', textAlign: 'center'
@@ -196,7 +196,7 @@ export function Landing() {
         display: 'flex', justifyContent: 'space-between', alignItems: 'center'
       }}>
         <span style={{ fontWeight: '700', fontSize: '14px' }}>
-          Meeting<span style={{ color: 'var(--accent)' }}> Intelligence Hub</span>
+          Meet<span style={{ color: 'var(--accent)' }}>Cognit</span>
         </span>
         <p style={{ color: 'var(--muted)', fontSize: '13px' }}>
           © 2026 Meeting Intelligence Hub.

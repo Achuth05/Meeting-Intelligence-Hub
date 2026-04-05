@@ -114,16 +114,6 @@ CREATE TABLE action_items (
   created_at timestamptz DEFAULT now()
 );
 
-CREATE TABLE sentiment_segments (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  meeting_id uuid REFERENCES meetings(id) ON DELETE CASCADE,
-  speaker text,
-  segment text,
-  score float,
-  label text,
-  time_start text
-);
-
 CREATE INDEX ON transcript_chunks
   USING ivfflat (embedding vector_cosine_ops)
   WITH (lists = 50);

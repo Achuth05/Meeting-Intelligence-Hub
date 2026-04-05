@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { DropZone } from '../components/DropZone'
 import { uploadFiles } from '../api/client'
-import { Sidebar } from '../components/Sidebar'
+import { Topbar } from '../components/Topbar'
 
 export default function Upload() {
   const [files, setFiles] = useState([])
@@ -48,16 +48,16 @@ export default function Upload() {
   }
 
   return (
-    <div className="page-layout">
-      <Sidebar />
+    <>
+      <Topbar />
 
-      <div className="main-content">
+      <>
         <div className="page-header">
           <h1>Upload Meeting</h1>
           <p>Upload .txt or .vtt transcript files to analyze</p>
         </div>
 
-        <div className="page-body" style={{ maxWidth: '680px' }}>
+        <div className="page-body" style={{ maxWidth: '680px', margin: '0 auto' }}>
 
           {error && <div className="alert alert-error">{error}</div>}
           {success && (
@@ -166,7 +166,7 @@ export default function Upload() {
           </div>
 
         </div>
-      </div>
-    </div>
+      </>
+    </>
   )
 }

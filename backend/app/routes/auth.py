@@ -120,3 +120,16 @@ def get_user():
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 401
+
+
+@auth_bp.route('/auth/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.get_json()
+    email = data.get('email')
+    if not email:
+        return jsonify({'error': 'Email required'}), 400
+    try:
+        supabase.auth.reset_password_email(email)
+        return jsonify({'message': 'Password reset email sent'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

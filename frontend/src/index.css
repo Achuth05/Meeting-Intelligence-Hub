@@ -174,9 +174,7 @@ input, textarea { font-family: var(--font); }
   transition: color 0.15s;
   flex-shrink: 0;
 }
-
 .logout-btn:hover { color: var(--danger); }
-
 .main-content {
   flex: 1;
   margin-left: 240px;

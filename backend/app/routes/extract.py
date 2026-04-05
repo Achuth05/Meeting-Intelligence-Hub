@@ -35,6 +35,7 @@ def extract(meeting_id):
                      'description': a['description'], 'owner': a.get('owner'),
                      'due_date': a.get('due_date')})
     if rows:
+        supabase.table('action_items').delete().eq('meeting_id', meeting_id).execute()
         supabase.table('action_items').insert(rows).execute()
 
     return jsonify(result)
