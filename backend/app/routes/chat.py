@@ -1,13 +1,10 @@
 from flask import Blueprint, request, jsonify
 from ..models.db import supabase
 from ..services.auth import token_required
-from ..services.embedding import model 
 from groq import Groq
 import os
 import re
-from fastembed import TextEmbedding
-
-model = TextEmbedding("BAAI/bge-small-en-v1.5")
+from ..services.embedding import embed_query
 
 chat_bp = Blueprint('chat', __name__)
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
@@ -63,7 +60,7 @@ def chat_with_meeting():
             print(f"DEBUG: Clean keywords: {dynamic_keywords}")
 
             # ii. Semantic Vector Search
-            query_vector = list(model.embed([question]))[0].tolist()
+            query_vector = embed_query(question)
             rpc_params = {
                 'query_embedding': query_vector,
                 'match_threshold': 0.02,

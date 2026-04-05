@@ -1,6 +1,7 @@
-from fastembed import TextEmbedding
+from groq import Groq
+import os
 
-model = TextEmbedding("BAAI/bge-small-en-v1.5")  # 384 dims, CPU only, tiny
+client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 def chunk_text(chunks: list, max_tokens=300) -> list:
     result, current, current_chars = [], [], 0
@@ -28,7 +29,17 @@ def chunk_text(chunks: list, max_tokens=300) -> list:
 
 def embed_chunks(chunks: list) -> list:
     texts = [c['content'] for c in chunks]
-    embeddings = list(model.embed(texts))
-    for i, emb in enumerate(embeddings):
-        chunks[i]['embedding'] = emb.tolist()
+    response = client.embeddings.create(
+        model="nomic-embed-text-v1.5",
+        input=texts
+    )
+    for i, emb in enumerate(response.data):
+        chunks[i]['embedding'] = emb.embedding
     return chunks
+
+def embed_query(text: str) -> list:
+    response = client.embeddings.create(
+        model="nomic-embed-text-v1.5",
+        input=[text]
+    )
+    return response.data[0].embedding
