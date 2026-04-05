@@ -10,7 +10,7 @@ def create_app():
     app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY')
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
 
-    CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     from .routes.auth import auth_bp
     from .routes.upload import upload_bp
