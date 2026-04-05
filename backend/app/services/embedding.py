@@ -6,7 +6,7 @@ import time
 # Get your free token from: https://huggingface.co/settings/tokens
 HF_TOKEN = os.environ.get("HF_API_TOKEN")
 MODEL_ID = "sentence-transformers/all-MiniLM-L6-v2"
-API_URL = f"https://router.huggingface.co/hf-inference/models/{MODEL_ID}"
+API_URL = f"https://api-inference.huggingface.co/pipeline/feature-extraction/{MODEL_ID}"
 headers = {"Authorization": f"Bearer {HF_TOKEN}"}
 
 def chunk_text(chunks: list, max_tokens=300) -> list:
@@ -50,28 +50,28 @@ def query_huggingface(payload):
 def embed_chunks(chunks: list) -> list:
     if not chunks:
         return []
-        
+
     texts = [c['content'] for c in chunks]
-    
-    # WRAP IN "inputs" KEY
+
     payload = {
         "inputs": texts,
         "options": {"wait_for_model": True}
     }
-    
+
     embeddings = query_huggingface(payload)
-    
-    # Attach embeddings back to chunks
+
     for i, emb in enumerate(embeddings):
         chunks[i]['embedding'] = emb
-        
+
     return chunks
 
 def embed_query(text: str) -> list:
-    # ALSO WRAP HERE
     payload = {
-        "inputs": [text], 
+        "inputs": text,  # single string, not list
         "options": {"wait_for_model": True}
     }
     response = query_huggingface(payload)
-    return response[0]
+        # response will be a list of lists, take first
+    if isinstance(response[0], list):
+        return response[0]
+    return response
