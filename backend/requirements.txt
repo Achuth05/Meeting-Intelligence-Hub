@@ -6,6 +6,7 @@ groq
 tiktoken
 reportlab
 numpy
+openai
 pandas
 webvtt-py
 gunicorn
