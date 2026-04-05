@@ -1,4 +1,4 @@
---extra-index-url https://download.pytorch.org/whl/cpu
+
 flask
 flask-cors
 python-dotenv
@@ -6,8 +6,7 @@ supabase
 groq
 reportlab
 numpy
-torch
-sentence-transformers
 pandas
 webvtt-py
+requests
 gunicorn
