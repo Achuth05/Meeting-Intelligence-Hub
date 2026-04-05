@@ -53,8 +53,13 @@ def embed_chunks(chunks: list) -> list:
         
     texts = [c['content'] for c in chunks]
     
-    # Generate embeddings via API
-    embeddings = query_huggingface({"inputs": texts, "options": {"wait_for_model": True}})
+    # WRAP IN "inputs" KEY
+    payload = {
+        "inputs": texts,
+        "options": {"wait_for_model": True}
+    }
+    
+    embeddings = query_huggingface(payload)
     
     # Attach embeddings back to chunks
     for i, emb in enumerate(embeddings):
@@ -63,6 +68,10 @@ def embed_chunks(chunks: list) -> list:
     return chunks
 
 def embed_query(text: str) -> list:
-    # Generate embedding for a single search query
-    response = query_huggingface({"inputs": [text], "options": {"wait_for_model": True}})
+    # ALSO WRAP HERE
+    payload = {
+        "inputs": [text], 
+        "options": {"wait_for_model": True}
+    }
+    response = query_huggingface(payload)
     return response[0]
