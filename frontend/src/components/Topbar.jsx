@@ -1,7 +1,3 @@
-import { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-
 export function Topbar() {
   const { user, logout } = useAuth()
   const location = useLocation()
@@ -30,15 +26,15 @@ export function Topbar() {
           <div style={{
             width: '28px', height: '28px', background: 'var(--accent)',
             borderRadius: '7px', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', fontWeight: '800', fontSize: '14px', color: 'white'
+            justifySelf: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '14px', color: 'white'
           }}>M</div>
           <span style={{ fontWeight: '700', fontSize: '15px', color: 'var(--text-h)' }}>
             Meet<span style={{ color: 'var(--accent)' }}>Cognit</span>
           </span>
         </Link>
 
-        {/* Desktop nav links */}
-        <nav style={{ display: 'flex', gap: '4px' }} className="topbar-nav">
+        {/* Desktop nav links - Removed inline display: flex */}
+        <nav className="topbar-nav" style={{ gap: '4px' }}>
           {navItems.map(item => {
             const active = location.pathname === item.path
             return (
@@ -58,8 +54,8 @@ export function Topbar() {
         {/* Spacer */}
         <div style={{ flex: 1 }} />
 
-        {/* Desktop user info + logout */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }} className="topbar-user">
+        {/* Desktop user info + logout - Removed inline display: flex */}
+        <div className="topbar-user" style={{ alignItems: 'center', gap: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{
               width: '28px', height: '28px', borderRadius: '50%',
@@ -67,7 +63,7 @@ export function Topbar() {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '12px', fontWeight: '700', color: 'white', flexShrink: 0
             }}>{initial}</div>
-            <div className="topbar-username">
+            <div className="topbar-username-text"> {/* renamed class to avoid conflict */}
               <p style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-h)', lineHeight: 1 }}>
                 {user?.username || user?.email?.split('@')[0]}
               </p>
@@ -81,10 +77,7 @@ export function Topbar() {
             background: 'transparent', border: '1px solid var(--border)',
             color: 'var(--text)', cursor: 'pointer', transition: 'all 0.15s',
             fontFamily: 'var(--font)', whiteSpace: 'nowrap'
-          }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--danger)'; e.currentTarget.style.color = 'var(--danger)' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text)' }}
-          >
+          }}>
             Logout
           </button>
         </div>
@@ -103,20 +96,15 @@ export function Topbar() {
         </button>
       </header>
 
-      {/* Mobile dropdown */}
+      {/* Mobile dropdown - Only visible when menuOpen is true */}
       {menuOpen && (
-        <div style={{
-          position: 'fixed', top: '56px', left: 0, right: 0,
-          background: 'var(--surface)', borderBottom: '1px solid var(--border)',
-          zIndex: 99, padding: '12px 16px',
-          display: 'flex', flexDirection: 'column', gap: '8px'
-        }}>
+        <div className="mobile-menu-overlay">
           {navItems.map(item => (
             <Link key={item.path} to={item.path}
               onClick={() => setMenuOpen(false)}
               style={{
-                padding: '10px 14px', borderRadius: '8px', fontSize: '14px',
-                fontWeight: '500', display: 'block',
+                padding: '12px 14px', borderRadius: '8px', fontSize: '14px',
+                fontWeight: '500', display: 'block', textDecoration: 'none',
                 color: location.pathname === item.path ? 'var(--accent)' : 'var(--text-h)',
                 background: location.pathname === item.path ? 'var(--accent-bg)' : 'var(--surface2)',
                 border: '1px solid var(--border)'
@@ -134,16 +122,16 @@ export function Topbar() {
                 fontSize: '12px', fontWeight: '700', color: 'white'
               }}>{initial}</div>
               <div>
-                <p style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-h)' }}>
+                <p style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-h)', margin: 0 }}>
                   {user?.username || user?.email?.split('@')[0]}
                 </p>
-                <p style={{ fontSize: '11px', color: 'var(--muted)' }}>{user?.email}</p>
+                <p style={{ fontSize: '11px', color: 'var(--muted)', margin: 0 }}>{user?.email}</p>
               </div>
             </div>
             <button onClick={() => { logout(); setMenuOpen(false) }} style={{
               padding: '6px 14px', borderRadius: '7px', fontSize: '13px',
               background: 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.3)',
-              color: 'var(--danger)', cursor: 'pointer', fontFamily: 'var(--font)'
+              color: 'var(--danger)', cursor: 'pointer'
             }}>
               Logout
             </button>
@@ -152,15 +140,32 @@ export function Topbar() {
       )}
 
       <style>{`
+        /* Desktop Defaults */
+        .topbar-nav { display: flex; }
+        .topbar-user { display: flex; }
         .topbar-hamburger { display: none; }
+        .mobile-menu-overlay { display: none; }
+
+        /* Mobile Adjustments (Screen width < 640px) */
         @media (max-width: 640px) {
-          .topbar-nav { display: none; }
-          .topbar-user { display: none; }
-          .topbar-hamburger { display: flex; }
-          .topbar-username { display: none; }
-        }
-        @media (min-width: 641px) {
-          .topbar-hamburger { display: none; }
+          .topbar-nav { display: none !important; }
+          .topbar-user { display: none !important; }
+          .topbar-hamburger { display: flex !important; }
+          
+          .mobile-menu-overlay {
+            display: flex;
+            position: fixed;
+            top: 56px;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            z-index: 99;
+            padding: 12px 16px;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+          }
         }
       `}</style>
     </>

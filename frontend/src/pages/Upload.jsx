@@ -52,9 +52,15 @@ export default function Upload() {
       <Topbar />
 
       <>
-        <div className="page-header">
-          <h1>Upload Meeting</h1>
-          <p>Upload .txt or .vtt transcript files to analyze</p>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 pb-4">
+          <div className="page-header">
+            <h1 className="text-2xl font-bold tracking-tight text-var(--text-h) sm:text-3xl">
+              Upload Meeting
+            </h1>
+            <p className="mt-2 text-sm text-var(--text) sm:text-base">
+              Upload .txt or .vtt transcript files to analyze
+            </p>
+          </div>
         </div>
 
         <div className="page-body" style={{ maxWidth: '680px', margin: '0 auto' }}>
