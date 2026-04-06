@@ -51,23 +51,37 @@ export default function Upload() {
     <>
       <Topbar />
 
-      <>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 pb-4">
-          <div className="page-header">
-            <h1 className="text-2xl font-bold tracking-tight text-var(--text-h) sm:text-3xl">
-              Upload Meeting
-            </h1>
-            <p className="mt-2 text-sm text-var(--text) sm:text-base">
-              Upload .txt or .vtt transcript files to analyze
-            </p>
-          </div>
+      {/* Main Container: Centers everything and adds top spacing to clear the Topbar */}
+      <div style={{ 
+        maxWidth: '680px', 
+        margin: '0 auto', 
+        padding: '80px 20px 40px 20px' // 80px top padding ensures it clears the 56px Topbar
+      }}>
+        
+        {/* Header Section: Now perfectly aligned with the cards below */}
+        <div style={{ marginBottom: '32px' }}>
+          <h1 style={{ 
+            fontSize: '28px', 
+            fontWeight: '800', 
+            color: 'var(--text-h)', 
+            letterSpacing: '-0.02em' 
+          }}>
+            Upload Meeting
+          </h1>
+          <p style={{ 
+            marginTop: '8px', 
+            fontSize: '15px', 
+            color: 'var(--text)', 
+            opacity: 0.8 
+          }}>
+            Upload .txt or .vtt transcript files to analyze
+          </p>
         </div>
 
-        <div className="page-body" style={{ maxWidth: '680px', margin: '0 auto' }}>
-
-          {error && <div className="alert alert-error">{error}</div>}
+        <div className="page-body">
+          {error && <div className="alert alert-error" style={{ marginBottom: '20px' }}>{error}</div>}
           {success && (
-            <div className="alert alert-success">
+            <div className="alert alert-success" style={{ marginBottom: '20px' }}>
               ✓ Upload successful! Redirecting to dashboard...
             </div>
           )}
@@ -170,9 +184,8 @@ export default function Upload() {
               <strong style={{ color: 'var(--text-h)' }}>Processing time:</strong> ~30–60 seconds depending on transcript length
             </p>
           </div>
-
         </div>
-      </>
+      </div>
     </>
   )
 }
