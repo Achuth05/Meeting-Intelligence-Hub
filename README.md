@@ -32,10 +32,9 @@ Key features:
 
 **AI / APIs**
 - Groq API (llama-3.3-70b-versatile) — LLM for extraction, chatbot, sentiment analysis
-- sentence-transformers (all-MiniLM-L6-v2) — local text embeddings for vector search
+- Hugging Face Inference API (all-MiniLM-L6-v2) — Cloud-based sentence embeddings for  high-speed vector search and RAG.
 
 **Libraries**
-- sentence-transformers — local embedding model
 - pandas — CSV export
 - reportlab — PDF export
 - react-dropzone — drag and drop file upload
@@ -77,6 +76,7 @@ SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
 SUPABASE_SERVICE_KEY=eyJxxxxxxxxxx
 FLASK_SECRET_KEY=anyrandomstring
 FRONTEND_URL=http://localhost:5173
+HF_API_TOKEN=xxxxxxxxxxxx
 ```
 ### 4. Supabase database setup
 Go to your Supabase project → SQL Editor and run the following:
