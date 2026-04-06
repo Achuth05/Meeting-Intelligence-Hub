@@ -119,7 +119,7 @@ export default function Dashboard() {
               <thead>
                 <tr style={{ background: 'var(--surface2)' }}>
                   {['Meeting', 'Project', 'Speakers', 'Words', 'Meeting Date', ''].map((h, i) => (
-                    <th key={i} style={{ padding: '10px 20px', textAlign: 'left', fontFamily: 'var(--mono)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', borderBottom: '1px solid var(--border)', fontWeight: '500' }}>{h}</th>
+                    <th key={i} style={{ padding: '10px 20px', textAlign: 'left', fontFamily: 'var(--mono)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', borderBottom: '1px solid var(--border)', fontWeight: '500' }} className='hide-mobile'>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -130,7 +130,7 @@ export default function Dashboard() {
                     onMouseEnter={e => e.currentTarget.style.background = 'var(--surface2)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                   >
-                    <td style={{ padding: '14px 20px' }}>
+                    <td style={{ padding: '14px 20px' }} clssName="hide-mobile">
                       <Link to={`/meeting/${meeting.id}`} style={{ fontWeight: '600', fontSize: '14px', color: 'var(--text-h)', textDecoration: 'none', transition: 'color 0.15s' }}
                         onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
                         onMouseLeave={e => e.currentTarget.style.color = 'var(--text-h)'}
@@ -138,27 +138,27 @@ export default function Dashboard() {
                         {meeting.name || `Meeting ${meeting.id?.slice(0, 8)}`}
                       </Link>
                     </td>
-                    <td style={{ padding: '14px 20px' }}>
+                    <td style={{ padding: '14px 20px' }} className='hide-mobile'>
                       <span style={{ fontSize: '12px', padding: '3px 10px', borderRadius: '20px', background: 'rgba(79,142,247,0.1)', color: 'var(--accent)', fontWeight: '500' }}>
                         {meeting.project || 'General'}
                       </span>
                     </td>
-                    <td style={{ padding: '14px 20px', fontSize: '13px', color: 'var(--text)' }}>
+                    <td style={{ padding: '14px 20px', fontSize: '13px', color: 'var(--text)' }} className='hide-mobile'>
                       {Array.isArray(meeting.speakers)
                         ? meeting.speakers.slice(0, 2).join(', ') + (meeting.speakers.length > 2 ? ` +${meeting.speakers.length - 2}` : '')
                         : '—'}
                     </td>
-                    <td style={{ padding: '14px 20px' }}>
+                    <td style={{ padding: '14px 20px' }} className='hide-mobile'>
                       <span style={{ fontFamily: 'var(--mono)', fontSize: '13px', color: 'var(--text)' }}>
                         {meeting.word_count?.toLocaleString() || '—'}
                       </span>
                     </td>
-                    <td style={{ padding: '14px 20px', fontSize: '13px', color: 'var(--text)' }}>
+                    <td style={{ padding: '14px 20px', fontSize: '13px', color: 'var(--text)' }} className='hide-mobile'>
                       {meeting.meeting_date
                         ? new Date(meeting.meeting_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                         : '—'}
                     </td>
-                    <td style={{ padding: '14px 20px' }}>
+                    <td style={{ padding: '14px 20px' }} className='hide-mobile'>
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                         <Link to={`/meeting/${meeting.id}`} style={{
                           padding: '5px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '600',

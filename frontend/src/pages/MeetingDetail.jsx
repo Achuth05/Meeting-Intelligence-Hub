@@ -125,7 +125,7 @@ export default function MeetingDetail() {
 
             {/* Actions tab — side by side */}
             {activeTab === 'actions' && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }} className="fade-up">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }} className="actions-grid">
 
                 {/* Action Items */}
                 <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
@@ -207,7 +207,7 @@ export default function MeetingDetail() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
                     {/* Row 1 — Score + Highlights side by side */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }} className='sentiment-top-grid'>
 
                       {/* Overall score */}
                       <div className="card" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', padding: '32px 24px' }}>

@@ -155,7 +155,7 @@ export function Landing() {
             From transcript to insight in minutes
           </h2>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0' }}>
             {[
               { n: '01', title: 'Upload', desc: 'Drop your .txt or .vtt transcript file' },
               { n: '02', title: 'Process', desc: 'AI extracts decisions, actions and sentiment' },
@@ -164,7 +164,7 @@ export function Landing() {
             ].map((s, i) => (
               <div key={i} style={{
                 padding: '32px 24px', position: 'relative',
-                borderRight: i < 3 ? '1px solid var(--border)' : 'none'
+                borderBottom: '1px solid var(--border)'
               }}>
                 <div style={{
                   fontFamily: 'var(--mono)', fontSize: '12px', color: 'var(--accent)',
@@ -193,7 +193,8 @@ export function Landing() {
       {/* Footer */}
       <footer style={{
         padding: '24px 48px', borderTop: '1px solid var(--border)',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        flexWrap: 'wrap', gap: '8px'
       }}>
         <span style={{ fontWeight: '700', fontSize: '14px' }}>
           Meet<span style={{ color: 'var(--accent)' }}>Cognit</span>
