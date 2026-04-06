@@ -165,30 +165,62 @@ export default function MeetingDetail() {
             )}
 
             {/* Sentiment tab */}
+            {/* Sentiment tab */}
             {activeTab === 'sentiment' && (
-              <div className="sentiment-container">
-                {sentimentLoading ? (
-                  <div style={{ textAlign: 'center', padding: '60px' }}><span className="spinner" /></div>
-                ) : sentiment && (
+              <div className="fade-up">
+                {sentimentLoading && (
+                  <div style={{ textAlign: 'center', padding: '60px', color: 'var(--muted)' }}>
+                    <span className="spinner" />
+                    <p style={{ marginTop: '16px', fontSize: '14px' }}>Analyzing sentiment...</p>
+                  </div>
+                )}
+
+                {sentiment && !sentimentLoading && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    
-                    {/* Row 1 — Score + Highlights responsive grid */}
-                    <div className="responsive-grid sentiment-top">
-                      <div className="card score-card" style={{ textAlign: 'center', padding: '32px' }}>
-                        <p style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--muted)' }}>Overall Sentiment</p>
+
+                    {/* Row 1 — Score + Highlights: Uses the responsive-grid class now */}
+                    <div className="responsive-grid sentiment-top-row">
+
+                      {/* Overall score */}
+                      <div className="card" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', padding: '32px 24px' }}>
+                        <p style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Overall Sentiment</p>
                         <div style={{ fontSize: '56px', fontWeight: '800', color: SENTIMENT_COLORS[sentiment.label]?.color }}>
-                           {((sentiment.overall_score || 0) * 100).toFixed(0)}
+                          {((sentiment.overall_score || 0) * 100).toFixed(0)}
                         </div>
-                        <div className="badge-sentiment">{sentiment.label}</div>
+                        <div className="badge-sentiment" style={{ background: SENTIMENT_COLORS[sentiment.label]?.bg, color: SENTIMENT_COLORS[sentiment.label]?.color }}>
+                          {sentiment.label}
+                        </div>
                       </div>
 
+                      {/* Key Highlights */}
                       <div className="card">
-                        <p style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '16px' }}>Highlights</p>
+                        <p style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '16px' }}>Key Highlights</p>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                           {sentiment.highlights?.map((h, i) => (
-                             <div key={i} className="highlight-item">{h}</div>
-                           ))}
+                          {sentiment.highlights?.map((h, i) => (
+                            <div key={i} className="highlight-item">{h}</div>
+                          ))}
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Row 2 — Per Speaker Breakdown */}
+                    <div className="card">
+                      <p style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '16px' }}>Speaker Breakdown</p>
+                      <div className="speaker-list">
+                        {Object.entries(sentiment.speaker_breakdown || {}).map(([speaker, data]) => (
+                          <div key={speaker} className="speaker-row">
+                            <div className="speaker-avatar">{speaker[0].toUpperCase()}</div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                <span style={{ fontSize: '13px', fontWeight: '600' }}>{speaker}</span>
+                                <span style={{ fontSize: '11px', color: SENTIMENT_COLORS[data.label]?.color }}>{data.dominant_emotion || data.label}</span>
+                              </div>
+                              <div className="progress-bar">
+                                <div style={{ width: `${Math.abs(data.score * 100)}%`, background: data.score > 0 ? 'var(--success)' : 'var(--danger)', height: '100%' }} />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -205,14 +237,38 @@ export default function MeetingDetail() {
         /* Desktop Layout (Default) */
         .responsive-grid {
           display: grid;
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: 1fr 1fr; /* Default 50/50 split */
           gap: 20px;
+        }
+
+        /* Use both classes on the sentiment row to override the 1fr 1fr */
+        .responsive-grid.sentiment-top-row {
+          grid-template-columns: 1fr 2fr;
+        }
+        .speaker-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 12px;
+        }
+        .speaker-avatar {
+          width: 32px; height: 32px; border-radius: 50%;
+          background: var(--accent); color: white;
+          display: flex; align-items: center; justify-content: center;
+          font-weight: 700; font-size: 12px; flex-shrink: 0;
         }
 
         /* Mobile Layout Adjustments */
         @media (max-width: 768px) {
-          .responsive-grid {
+          .responsive-grid, .sentiment-top-row {
             grid-template-columns: 1fr; /* Changes side-by-side to stacked */
+          }
+          .highlight-item {
+            font-size: 12px !important;
+            padding: 10px !important;
+          }
+          .speaker-row {
+            flex-wrap: wrap; 
           }
           
           .stats-grid {
