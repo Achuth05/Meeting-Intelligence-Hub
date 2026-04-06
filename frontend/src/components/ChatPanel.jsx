@@ -40,6 +40,7 @@ export function ChatPanel({ meetingId = null }) {
     <>
       <button
         onClick={() => setOpen(o => !o)}
+        title={!open ? "Ask Milo about your meetings" : ""}
         style={{
           position: 'fixed', bottom: '20px', right: '20px',
           width: '50px', height: '50px', borderRadius: '50%',
@@ -68,7 +69,7 @@ export function ChatPanel({ meetingId = null }) {
               fontSize: '14px', flexShrink: 0
             }}>🤖</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-h)', lineHeight: 1 }}>MeetCognit AI</p>
+              <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-h)', lineHeight: 1 }}>Milo</p>
               <p style={{ fontSize: '11px', color: 'var(--accent2)', marginTop: '2px' }}>
                 {meetingId ? 'This meeting' : 'All meetings'} · Ask anything
               </p>
