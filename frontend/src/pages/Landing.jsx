@@ -8,33 +8,35 @@ export function Landing() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
 
       {/* Nav */}
-      <nav style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        padding: '20px 48px', borderBottom: '1px solid var(--border)',
-        position: 'sticky', top: 0, background: 'rgba(15,17,23,0.9)',
-        backdropFilter: 'blur(12px)', zIndex: 100
+      <nav className="landing-nav" style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          padding: '20px 48px', borderBottom: '1px solid var(--border)',
+          position: 'sticky', top: 0, background: 'rgba(15,17,23,0.9)',
+          backdropFilter: 'blur(12px)', zIndex: 100
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{
-            width: '28px', height: '28px', background: 'var(--accent)',
-            borderRadius: '6px', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', fontSize: '14px', fontWeight: '800', color: 'white'
-          }}>M</div>
-          <span style={{ fontWeight: '700', fontSize: '16px', color: 'var(--text-h)' }}>
-            Meet<span style={{ color: 'var(--accent)' }}>Cognit</span>
-          </span>
-        </div>
+          {/* Logo Section */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+              <div style={{
+                  width: '28px', height: '28px', background: 'var(--accent)',
+                  borderRadius: '6px', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', fontSize: '14px', fontWeight: '800', color: 'white'
+              }}>M</div>
+              <span style={{ fontWeight: '700', fontSize: '16px', color: 'var(--text-h)' }}>
+                  Meet<span style={{ color: 'var(--accent)' }}>Cognit</span>
+              </span>
+          </div>
 
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          {user ? (
-            <Link to="/dashboard" className="btn btn-primary">Go to Dashboard →</Link>
-          ) : (
-            <>
-              <Link to="/auth" className="btn btn-ghost">Login</Link>
-              <Link to="/auth" className="btn btn-primary">Get Started</Link>
-            </>
-          )}
-        </div>
+          {/* Auth Links Section */}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+              {user ? (
+                  <Link to="/dashboard" className="btn btn-primary" style={{ fontSize: '13px', padding: '8px 12px' }}>Dashboard →</Link>
+              ) : (
+                  <>
+                      <Link to="/auth" className="btn btn-ghost" style={{ fontSize: '13px', padding: '8px 12px' }}>Login</Link>
+                      <Link to="/auth" className="btn btn-primary" style={{ fontSize: '13px', padding: '8px 12px' }}>Get Started</Link>
+                  </>
+              )}
+          </div>
       </nav>
 
       {/* Hero */}
@@ -203,6 +205,25 @@ export function Landing() {
           © 2026 Meeting Intelligence Hub.
         </p>
       </footer>
+      <style>{`
+          @media (max-width: 640px) {
+            .landing-nav {
+              /* Reduce the 48px padding to 16px so items don't touch */
+              padding: 15px 16px !important;
+            }
+            
+            .landing-nav .btn {
+              /* Slightly smaller buttons on mobile to save space */
+              padding: 6px 10px !important;
+              font-size: 12px !important;
+            }
+
+            /* Prevents the logo text from getting squashed */
+            .landing-nav span {
+              font-size: 14px !important;
+            }
+          }
+      `}</style>
     </div>
   )
 }
