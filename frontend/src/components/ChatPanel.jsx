@@ -28,27 +28,28 @@ export function ChatPanel({ meetingId = null }) {
     const q = input.trim()
     if (!q || loading) return
     
+    // We keep the message in the UI for the user to see
     const userMsg = { role: 'user', content: q }
-    
-    // CHANGE THIS LINE: 
-    // Instead of mapping all messages, send an empty array [] 
-    // or just the very last response to save tokens.
-    const history = []; 
-
     setMessages(prev => [...prev, userMsg])
     setInput('')
     setLoading(true)
     
     try {
+      // FIX: We send an empty array [] for history. 
+      // This removes the 1,300+ extra tokens I added yesterday.
+      // We also ensure meetingId is handled strictly.
       const mid = meetingId || null 
-      // Now history is [], so you save thousands of tokens!
-      const { data } = await askQuestion(q, mid, history) 
+      
+      const { data } = await askQuestion(q, mid, []) 
+
       setMessages(prev => [...prev, { role: 'assistant', content: data.answer }])
     } catch (err) {
-      console.error("Chat Error Detail:", err.response?.data);
+      // Detailed logging to help us see if it's still a limit issue
+      console.error("Chat Error:", err.response?.data || err.message)
+      
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: 'The context for this query is a bit too large. Try asking a more specific question!', 
+        content: 'Milo is struggling with the size of this transcript. Try a more specific question.', 
         error: true 
       }])
     } finally {
