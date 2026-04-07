@@ -27,16 +27,38 @@ export function ChatPanel({ meetingId = null }) {
   const send = async () => {
     const q = input.trim()
     if (!q || loading) return
+    
+    // 1. Prepare the user message for the UI
     const userMsg = { role: 'user', content: q }
-    const history = messages.map(m => ({ role: m.role, content: m.content }))
+    
+    // 2. Clean the history: 
+    // If the backend doesn't use history yet, let's not send it to avoid 500 errors.
+    // Or, ensure it's a simple list of strings if that's what it used to be.
+    const history = messages
+      .filter(m => !m.error)
+      .map(m => ({ role: m.role, content: m.content }))
+
     setMessages(prev => [...prev, userMsg])
     setInput('')
     setLoading(true)
+    
     try {
-      const { data } = await askQuestion(q, meetingId, history)
+      // 3. IMPORTANT: Ensure meetingId is null, not undefined
+      // Flask's request.json.get('meeting_id') handles null better than undefined
+      const mid = meetingId || null 
+      
+      const { data } = await askQuestion(q, mid, history)
+      
       setMessages(prev => [...prev, { role: 'assistant', content: data.answer }])
-    } catch {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, something went wrong.', error: true }])
+    } catch (err) {
+      // Log the error so you can see exactly what the backend complained about
+      console.error("Chat Error:", err.response?.data);
+      
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: 'Milo is having trouble connecting to the brain. Please try again.', 
+        error: true 
+      }])
     } finally {
       setLoading(false)
     }
