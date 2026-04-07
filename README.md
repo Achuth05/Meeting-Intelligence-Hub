@@ -1,7 +1,6 @@
 # MeetCognit
 
-## Project Title
-MeetCognit — AI-powered meeting transcript analysis and knowledge retrieval system.
+AI-powered meeting transcript analysis and knowledge retrieval system.
 
 ## The Problem
 Organizations hold dozens of meetings every week, generating hours of transcript content that nobody has time to read. Critical decisions, action items, and strategic reasoning get buried in pages of dialogue, forcing teams into repeated "what happened in that meeting?" conversations that waste time and slow execution.
@@ -48,11 +47,12 @@ Key features:
 - Node.js 18 or higher
 - A Supabase account (free tier works)
 - A Groq API key (free at console.groq.com)
+- Hugging Face Inference API
 
 ### 1. Clone the repository
 ```bash
 git clone https://github.com/Achuth05/Meeting-Intelligence-Hub.git
-cd Meeting-intelligence-Hub
+cd Meeting-Intelligence-Hub
 ```
 
 ### 2. Backend setup
@@ -74,6 +74,7 @@ Create a `.env` file inside the `backend` folder:
 GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxx
 SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
 SUPABASE_SERVICE_KEY=eyJxxxxxxxxxx
+SUPABASE_ANON_KEY=xxxxxxxxxxx
 FLASK_SECRET_KEY=anyrandomstring
 FRONTEND_URL=http://localhost:5173
 HF_API_TOKEN=xxxxxxxxxxxx
