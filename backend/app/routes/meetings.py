@@ -27,6 +27,5 @@ def get_user_meetings():
 def delete_meeting(meeting_id):
     supabase.table('action_items').delete().eq('meeting_id', meeting_id).execute()
     supabase.table('transcript_chunks').delete().eq('meeting_id', meeting_id).execute()
-    supabase.table('sentiment_segments').delete().eq('meeting_id', meeting_id).execute()
     supabase.table('meetings').delete().eq('id', meeting_id).execute()
     return jsonify({'success': True})
