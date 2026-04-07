@@ -28,14 +28,13 @@ export function ChatPanel({ meetingId = null }) {
     const q = input.trim()
     if (!q || loading) return
     
-    // 1. Prepare the user message for the UI
     const userMsg = { role: 'user', content: q }
     
-    // 2. Clean the history: 
-    // If the backend doesn't use history yet, let's not send it to avoid 500 errors.
-    // Or, ensure it's a simple list of strings if that's what it used to be.
+    // FIX: Only send the last 2 or 3 messages of history to save tokens.
+    // This keeps the context small so Groq doesn't crash.
     const history = messages
       .filter(m => !m.error)
+      .slice(-4) // Take only the last 4 messages (2 pairs of Q&A)
       .map(m => ({ role: m.role, content: m.content }))
 
     setMessages(prev => [...prev, userMsg])
@@ -43,22 +42,20 @@ export function ChatPanel({ meetingId = null }) {
     setLoading(true)
     
     try {
-      // 3. IMPORTANT: Ensure meetingId is null, not undefined
-      // Flask's request.json.get('meeting_id') handles null better than undefined
       const mid = meetingId || null 
-      
       const { data } = await askQuestion(q, mid, history)
-      
       setMessages(prev => [...prev, { role: 'assistant', content: data.answer }])
     } catch (err) {
-      // Log the error so you can see exactly what the backend complained about
-      console.error("Chat Error:", err.response?.data);
-      
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: 'Milo is having trouble connecting to the brain. Please try again.', 
-        error: true 
-      }])
+      // Check if it's a 500 error (which your logs show is the Groq limit)
+      if (err.response?.status === 500) {
+        setMessages(prev => [...prev, { 
+          role: 'assistant', 
+          content: "The transcript context is a bit too large for me to process all at once. Try asking a more specific question about a single topic!", 
+          error: true 
+        }])
+      } else {
+        setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, something went wrong.', error: true }])
+      }
     } finally {
       setLoading(false)
     }
