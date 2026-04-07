@@ -30,12 +30,10 @@ export function ChatPanel({ meetingId = null }) {
     
     const userMsg = { role: 'user', content: q }
     
-    // FIX: Only send the last 2 or 3 messages of history to save tokens.
-    // This keeps the context small so Groq doesn't crash.
-    const history = messages
-      .filter(m => !m.error)
-      .slice(-4) // Take only the last 4 messages (2 pairs of Q&A)
-      .map(m => ({ role: m.role, content: m.content }))
+    // CHANGE THIS LINE: 
+    // Instead of mapping all messages, send an empty array [] 
+    // or just the very last response to save tokens.
+    const history = []; 
 
     setMessages(prev => [...prev, userMsg])
     setInput('')
@@ -43,24 +41,20 @@ export function ChatPanel({ meetingId = null }) {
     
     try {
       const mid = meetingId || null 
-      const { data } = await askQuestion(q, mid, history)
+      // Now history is [], so you save thousands of tokens!
+      const { data } = await askQuestion(q, mid, history) 
       setMessages(prev => [...prev, { role: 'assistant', content: data.answer }])
     } catch (err) {
-      // Check if it's a 500 error (which your logs show is the Groq limit)
-      if (err.response?.status === 500) {
-        setMessages(prev => [...prev, { 
-          role: 'assistant', 
-          content: "The transcript context is a bit too large for me to process all at once. Try asking a more specific question about a single topic!", 
-          error: true 
-        }])
-      } else {
-        setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, something went wrong.', error: true }])
-      }
+      console.error("Chat Error Detail:", err.response?.data);
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: 'The context for this query is a bit too large. Try asking a more specific question!', 
+        error: true 
+      }])
     } finally {
       setLoading(false)
     }
   }
-
   const handleKey = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
   }
